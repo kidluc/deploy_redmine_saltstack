@@ -1,0 +1,78 @@
+{% set vars = pillar['redmine']%}
+
+rbenv:
+  pkg.latest:
+    - refresh: True
+
+rbenv-deps:
+  pkg.installed:
+    - pkgs:
+      - bash
+      - git
+      - openssl
+      - libssl-dev
+      - make
+      - curl
+      - autoconf
+      - bison
+      - build-essential
+      - libssl-dev
+      - libyaml-dev
+      - libreadline6-dev
+      - zlib1g-dev
+      - libncurses5-dev
+
+bundler:
+  gem.installed
+
+bundle-install:
+  cmd.run:
+    - name: rbenv exec bundle install --without development test
+    - cwd: /var/www/redmine
+    - env:
+      - RBENV_ROOT: /usr/local/rbenv
+    - require:
+      - /var/www/redmine/config/database.yml
+
+bundle-gen-token:
+  cmd.run:
+    - name: rbenv exec rake generate_secret_token
+    - cwd: /var/www/redmine
+    - env:
+      - RBENV_ROOT: /usr/local/rbenv
+    - require:
+      - /var/www/redmine/config/database.yml
+      - cmd: bundle-install
+
+bundle-db-init-schema:
+  cmd.run:
+    - name: rbenv exec rake db:migrate && echo 1 > {{vars['rootdir']}}/db-schema.txt
+    - unless: grep 1 {{vars['rootdir']}}/db-schema.txt
+    - cwd: {{ vars['rootdir'] }}
+    - env:
+      - RBENV_ROOT: /usr/local/rbenv
+      - RAILS_ENV: production
+    - require:
+      - cmd: bundle-install
+      - cmd: bundle-gen-token
+
+bundle-db-init-data:
+  cmd.run:
+    - name: echo "" | rbenv exec rake redmine:load_default_data && echo 1 > {{vars['rootdir']}}/db-data.txt
+    - unless: grep 1 {{vars['rootdir']}}/db-data.txt
+    - cwd: {{ vars['rootdir'] }}
+    - env:
+      - RBENV_ROOT: /usr/local/rbenv
+      - RAILS_ENV: production
+    - require:
+      - cmd: bundle-install
+      - cmd: bundle-gen-token
+      - cmd: bundle-db-init-schema
+
+#systemctl:
+#  cmd.run:
+#    - name: systemctl restart nginx
+#    - require:
+#      - bundle-db-init-data
+#      - bundle-gen-token
+#      - bundle-db-init-schema
