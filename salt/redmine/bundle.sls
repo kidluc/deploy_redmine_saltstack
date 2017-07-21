@@ -30,7 +30,7 @@ bundle-install-gems:
     - name: rbenv exec bundle install --without development test
     - cwd: {{ vars['rootdir'] }}
     - env:
-      - RBENV_ROOT: /usr/local/rbenv
+      - RBENV_ROOT: {{ salt['pillar.get']('redmine:rbenv_dir') }}
 
 bundle-generate-secret:
   cmd.run:
@@ -38,7 +38,7 @@ bundle-generate-secret:
     - unless: grep 1 {{vars['rootdir']}}/secret.txt
     - cwd: {{ vars['rootdir'] }}
     - env:
-      - RBENV_ROOT: /usr/local/rbenv
+      - RBENV_ROOT: {{ salt['pillar.get']('redmine:rbenv_dir') }}
     - require:
       - cmd: bundle-install-gems
 
@@ -48,7 +48,7 @@ bundle-db-init-schema:
     - unless: grep 1 {{vars['rootdir']}}/db-schema.txt
     - cwd: {{ vars['rootdir'] }}
     - env:
-      - RBENV_ROOT: /usr/local/rbenv
+      - RBENV_ROOT: {{ salt['pillar.get']('redmine:rbenv_dir') }}
       - RAILS_ENV: production
     - require:
       - cmd: bundle-install-gems
@@ -60,7 +60,7 @@ bundle-db-init-data:
     - unless: grep 1 {{vars['rootdir']}}/db-data.txt
     - cwd: {{ vars['rootdir'] }}
     - env:
-      - RBENV_ROOT: /usr/local/rbenv
+      - RBENV_ROOT: {{ salt['pillar.get']('redmine:rbenv_dir') }}
       - RAILS_ENV: production
     - require:
       - cmd: bundle-install-gems

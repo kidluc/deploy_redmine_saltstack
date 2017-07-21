@@ -1,74 +1,80 @@
 mkdir:
   cmd.run:
-    - name: mkdir -p /var/www/
+    - name: mkdir -p {{ salt['pillar.get']('nginx:root_dir') }}/
 
-https://svn.redmine.org/redmine/branches/3.2-stable:
+https://svn.redmine.org/redmine/branches/{{ salt['pillar.get']('redmine:version') }}-stable:
   svn.export:
-    - target: /var/www/
+    - target: {{ salt['pillar.get']('nginx:root_dir') }}/
     - trust: True
 
-/var/www/3.2-stable:
+{{ salt['pillar.get']('nginx:root_dir') }}/{{ salt['pillar.get']('redmine:version') }}-stable:
   file.rename:
-    - name: /var/www/redmine
-    - source: /var/www/3.2-stable
+    - name: {{ salt['pillar.get']('nginx:root_dir') }}/redmine
+    - source: {{ salt['pillar.get']('nginx:root_dir') }}/{{ salt['pillar.get']('redmine:version') }}-stable
     - force: True
 
-/var/www/redmine/config:
+{{ salt['pillar.get']('nginx:config_dir') }}:
   file.copy:
-    - name: /var/www/redmine/config/configuration.yml
-    - source: /var/www/redmine/config/configuration.yml.example
+    - name: {{ salt['pillar.get']('nginx:config_dir') }}/configuration.yml
+    - source: {{ salt['pillar.get']('nginx:config_dir') }}/configuration.yml.example
     - force: True
 
-/var/www/redmine/config/database.yml:
+{{ salt['pillar.get']('nginx:config_dir') }}/database.yml:
   file.managed:
-    - source: salt://redmine/config/database.yml
-    - user: root
-    - group: root
+    - source: {{ salt['pillar.get']('nginx:source') }}/database.yml
+    - user: {{ salt['pillar.get']('nginx:root_user') }}
+    - group: {{ salt['pillar.get']('nginx:root_user') }}
     - mode: 644
 
-#/var/www/redmine/tmp:
-#  file.directory:
-#    - name: /var/www/redmine/tmp/pdf
-#    - force: True
-
-/var/www/redmine/public:
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/public:
   file.directory:
-    - name: /var/www/redmine/public/plugin_assets
+    - name: {{ salt['pillar.get']('nginx:root_dir') }}/redmine/public/plugin_assets
     - force: True
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
 
-/var/www/redmine/files:
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/files:
   file.directory:
-    - name: /var/www/redmine/tmp/pdf
+    - name: {{ salt['pillar.get']('nginx:root_dir') }}/redmine/files
     - force: True
-    - user: www-data
-    - group: www-data
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
     - mode: 775
     - recurse:
       - user
       - group
 
-/var/www/redmine/tmp:
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/tmp:
   file.directory:
-    - user: www-data
-    - group: www-data
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
     - mode: 775
     - recurse:
       - user
       - group
 
-/var/www/redmine/log:
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/log:
   file.directory:
-    - user: www-data
-    - group: www-data
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
     - mode: 775
     - recurse:
       - user
       - group
 
-/var/www/redmine/public/plugin_assets:
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/public/plugin_assets:
   file.directory:
-    - user: www-data
-    - group: www-data
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
+    - mode: 775
+    - recurse:
+      - user
+      - group
+
+{{ salt['pillar.get']('nginx:root_dir') }}/redmine/tmp/pdf:
+  file.directory:
+    - user: {{ salt['pillar.get']('nginx:user') }}
+    - group: {{ salt['pillar.get']('nginx:user') }}
     - mode: 775
     - recurse:
       - user

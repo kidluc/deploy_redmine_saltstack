@@ -1,30 +1,30 @@
-/opt/nginx/conf/nginx.conf:
+{{ salt['pillar.get']('nginx:dir') }}/nginx.conf:
   file.managed:
-    - source: salt://redmine/config/nginx.conf
-    - user: root
-    - group: root
+    - source: {{ salt['pillar.get']('nginx:source') }}/nginx.conf
+    - user: {{ salt['pillar.get']('nginx:root_user') }}
+    - group: {{ salt['pillar.get']('nginx:root_user') }}
     - mode: 644
-    - template: jinja
+    - template: {{ salt['pillar.get']('nginx:template') }}
     - makedirs: True
 
 mkdir:
   cmd.run:
-    - name: mkdir -p /opt/nginx/conf/vhost
+    - name: mkdir -p {{ salt['pillar.get']('nginx:dir') }}/vhost
 
-/opt/nginx/conf/vhost/redmine.conf:
+{{ salt['pillar.get']('nginx:dir') }}/vhost/redmine.conf:
   file.managed:
-    - source: salt://redmine/config/redmine.conf
-    - user: root
-    - group: root
+    - source: {{ salt['pillar.get']('nginx:source') }}/redmine.conf
+    - user: {{ salt['pillar.get']('nginx:root_user') }}
+    - group: {{ salt['pillar.get']('nginx:root_user') }}
     - mode: 644
-    - template: jinja
+    - template: {{ salt['pillar.get']('nginx:template') }}
     - makedirs: True
     - require:
       - mkdir
 
 /lib/systemd/system/nginx.service:
   file.managed:
-    - source: salt://redmine/config/nginx.service
-    - user: root
-    - group: root
+    - source: {{ salt['pillar.get']('nginx:source') }}/nginx.service
+    - user: {{ salt['pillar.get']('nginx:root_user') }}
+    - group: {{ salt['pillar.get']('nginx:root_user') }}
     - mode: 644
